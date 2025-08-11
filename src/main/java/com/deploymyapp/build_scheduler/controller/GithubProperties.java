@@ -14,6 +14,6 @@ public class GithubProperties {
 
     private String webhookSecret;
     private String appId;
-    private String privateKey;
+    private String appKey;
 
 }

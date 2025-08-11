@@ -1,0 +1,8 @@
+spring:
+  application.name: build-scheduler
+  jackson.default-property-inclusion: NON_EMPTY
+
+github:
+  webhook.secret: ${GITHUB_WEBHOOK_SECRET:none}
+  app.id: ${GITHUB_APP_ID:none}
+  app.key: ${GITHUB_APP_KEY:none}
