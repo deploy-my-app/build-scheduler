@@ -8,3 +8,4 @@ github:
   app-key: ${GITHUB_APP_KEY:none}
   orga-pat: ${GITHUB_ORGA_PAT:none}
   job-url: ${GITHUB_JOB_URL:https://api.github.com/repos/deploy-my-app/build-app/actions/workflows/dispatcher.yml/dispatches}
+  allowed-organizations: deploy-my-app

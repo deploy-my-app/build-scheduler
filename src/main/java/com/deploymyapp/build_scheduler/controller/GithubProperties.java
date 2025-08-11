@@ -1,5 +1,7 @@
 package com.deploymyapp.build_scheduler.controller;
 
+import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,5 +19,6 @@ public class GithubProperties {
     private String appKey;
     private String jobUrl;
     private String orgaPat;
+    private List<String> allowedOrganizations;
 
 }

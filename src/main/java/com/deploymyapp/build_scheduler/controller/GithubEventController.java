@@ -42,8 +42,13 @@ public class GithubEventController {
             log.info("Invalid signature for GitHub webhook");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        GithubPushEventPayload pushEvent = parsePayload(payload);
-        triggerGithubWorkflow(pushEvent.repository().name(), pushEvent.repository().owner().login(), pushEvent.ref());
+        var pushEvent = parsePayload(payload);
+        var organization = pushEvent.repository().owner().login();
+        if (githubProperties.getAllowedOrganizations().contains(organization)) {
+            triggerGithubWorkflow(pushEvent.repository().name(), organization, pushEvent.ref());
+        } else {
+            log.info("Push event from non-allowed organization. Project: {}", pushEvent.repository().full_name());
+        }
         return ResponseEntity.ok().build();
     }
 
