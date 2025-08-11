@@ -1,24 +1,25 @@
-# Ce workflow utilise des actions qui ne sont pas certifiées par GitHub.
-# Elles sont fournies par un tiers et régies par
-# des conditions d’utilisation du service, une politique de confidentialité et un support distincts.
-# documentation en ligne.
-
-# GitHub recommande d’épingler les actions à un SHA de commit.
-# Pour obtenir une version plus récente, vous devez mettre à jour le SHA.
-# Vous pouvez également référencer une balise ou une branche, mais l’action peut changer sans avertissement.
-
-name: Publish Docker image
+name: Build app and deploy
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-  push_to_registry:
-    name: Push Docker image to Docker Hub
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Set up Java for publishing to Maven Central Repository
         uses: actions/setup-java@v4
@@ -44,9 +45,10 @@ jobs:
           push: true
           tags: shyndard/build-scheduler:1.0.0
 
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
+      - name: Deploy Image to CapRover
+        uses: caprover/deploy-from-github@v1.1.2
         with:
-          subject-name: index.docker.io/shyndard/build-scheduler
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
+          server: ${{ secrets.CAPROVER_SERVER }}
+          app: build-scheduler
+          token: ${{ secrets.CAPROVER_TOKEN }}
+          image: shyndard/build-scheduler:1.0.0
