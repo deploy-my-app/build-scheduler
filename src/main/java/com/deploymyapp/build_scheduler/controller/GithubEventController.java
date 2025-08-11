@@ -83,7 +83,8 @@ public class GithubEventController {
         HttpEntity<String> entity = new HttpEntity<>(body, headers);
         try {
             restTemplate.postForEntity(githubProperties.getJobUrl(), entity, String.class);
-            log.info("GitHub workflow triggered.");
+            log.info("GitHub workflow triggered successfully for repository: {}, owner: {}, ref: {}", repoName,
+                    repoOwner, ref);
         } catch (Exception e) {
             log.info("Failed to trigger GitHub workflow: {}", e.getMessage());
         }
