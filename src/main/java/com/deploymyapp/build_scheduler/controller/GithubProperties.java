@@ -15,5 +15,7 @@ public class GithubProperties {
     private String webhookSecret;
     private String appId;
     private String appKey;
+    private String jobUrl;
+    private String orgaPat;
 
 }

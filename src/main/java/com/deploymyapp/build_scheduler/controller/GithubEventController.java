@@ -6,12 +6,16 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Hex;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -22,9 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 public class GithubEventController {
 
     private final GithubProperties githubProperties;
+    private final RestTemplate restTemplate;
 
-    public GithubEventController(final GithubProperties githubProperties) {
+    public GithubEventController(final GithubProperties githubProperties, final RestTemplate restTemplate) {
         this.githubProperties = githubProperties;
+        this.restTemplate = restTemplate;
     }
 
     @PostMapping("/webhooks/github")
@@ -37,8 +43,7 @@ public class GithubEventController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         GithubPushEventPayload pushEvent = parsePayload(payload);
-        log.info("Event Type: {}", eventType);
-        log.info("Payload: {}", pushEvent);
+        triggerGithubWorkflow(pushEvent.repository().name(), pushEvent.repository().owner().login(), pushEvent.ref());
         return ResponseEntity.ok().build();
     }
 
@@ -67,4 +72,21 @@ public class GithubEventController {
             throw new RuntimeException("Failed to parse payload", e);
         }
     }
+
+    private void triggerGithubWorkflow(String repoName, String repoOwner, String ref) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(githubProperties.getOrgaPat());
+        // Le paramètre "ref" doit être la branche à utiliser, par exemple "main"
+        String body = String.format("{\"ref\": \"%s\",\"inputs\":{\"repo_name\":\"%s\",\"repo_owner\":\"%s\"}}", ref,
+                repoName, repoOwner);
+        HttpEntity<String> entity = new HttpEntity<>(body, headers);
+        try {
+            restTemplate.postForEntity(githubProperties.getJobUrl(), entity, String.class);
+            log.info("GitHub workflow triggered.");
+        } catch (Exception e) {
+            log.info("Failed to trigger GitHub workflow: {}", e.getMessage());
+        }
+    }
+
 }
