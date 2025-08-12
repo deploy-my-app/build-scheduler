@@ -38,7 +38,7 @@ public class GithubEventController {
             @RequestBody final String payload,
             @RequestHeader(value = "X-GitHub-Event", required = false) String eventType,
             @RequestHeader(value = "X-Hub-Signature-256", required = false) String signature256) {
-        if (eventType == null || "push".equalsIgnoreCase(eventType)) {
+        if (eventType == null || !"push".equalsIgnoreCase(eventType)) {
             log.info("Received non-push event: {}", eventType);
             return ResponseEntity.ok().build();
         }
