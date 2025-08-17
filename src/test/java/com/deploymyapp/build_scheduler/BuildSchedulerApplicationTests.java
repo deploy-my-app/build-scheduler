@@ -1,7 +1,7 @@
 package com.deploymyapp.build_scheduler;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.nio.charset.StandardCharsets;
 
@@ -17,8 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(properties = {
-        "github.webhook-secret=test-secret",
-        "github.allowed-organizations=allowed-org"
+                "github.webhook-secret=test-secret",
+                "github.allowed-organizations=allowed-org"
 })
 @AutoConfigureMockMvc
 class BuildSchedulerApplicationTests {
@@ -89,6 +89,7 @@ class BuildSchedulerApplicationTests {
         private String hmacSha256(String data, String secret) throws Exception {
                 Mac hmac = Mac.getInstance("HmacSHA256");
                 SecretKeySpec key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+                hmac.init(key);
                 return Hex.encodeHexString(hmac.doFinal(data.getBytes(StandardCharsets.UTF_8)));
         }
 }
