@@ -1,6 +1,7 @@
 package com.deploymyapp.build_scheduler.controller;
 
 import java.security.MessageDigest;
+import java.nio.charset.StandardCharsets;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -62,11 +63,11 @@ public class GithubEventController {
         }
         try {
             Mac hmac = Mac.getInstance("HmacSHA256");
-            SecretKeySpec key = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+            SecretKeySpec key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             hmac.init(key);
-            String expectedHex = Hex.encodeHexString(hmac.doFinal(payload.getBytes()));
-            String receivedHex = signature256.substring("sha256=".length());
-            return MessageDigest.isEqual(expectedHex.getBytes(), receivedHex.getBytes());
+            byte[] expected = hmac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
+            byte[] received = Hex.decodeHex(signature256.substring("sha256=".length()).toCharArray());
+            return MessageDigest.isEqual(expected, received);
         } catch (Exception e) {
             return false;
         }
